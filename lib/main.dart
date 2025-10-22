@@ -12,7 +12,7 @@ class CalculadoraApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Calculadora Flutter',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData.dark(),
       home: const CalculadoraScreen(),
     );
   }
@@ -27,79 +27,126 @@ class CalculadoraScreen extends StatefulWidget {
 
 class _CalculadoraScreenState extends State<CalculadoraScreen> {
   final Calculadora calc = Calculadora();
-  final TextEditingController num1Controller = TextEditingController();
-  final TextEditingController num2Controller = TextEditingController();
   String resultado = '';
+  String num1 = '';
+  String num2 = '';
+  String operacao = '';
 
-  void somar() {
-    int a = int.tryParse(num1Controller.text) ?? 0;
-    int b = int.tryParse(num2Controller.text) ?? 0;
-    setState(() => resultado = calc.somar(a, b).toString());
+  void adicionarNumero(String numero) {
+    setState(() {
+      if (operacao.isEmpty) {
+        num1 += numero;
+        resultado = num1;
+      } else {
+        num2 += numero;
+        resultado = num2;
+      }
+    });
   }
 
-  void subtrair() {
-    int a = int.tryParse(num1Controller.text) ?? 0;
-    int b = int.tryParse(num2Controller.text) ?? 0;
-    setState(() => resultado = calc.subtrair(a, b).toString());
+  void selecionarOperacao(String op) {
+    setState(() {
+      operacao = op;
+    });
   }
 
-  void multiplicar() {
-    int a = int.tryParse(num1Controller.text) ?? 0;
-    int b = int.tryParse(num2Controller.text) ?? 0;
-    setState(() => resultado = calc.multiplicar(a, b).toString());
+  void calcular() {
+    setState(() {
+      int a = int.tryParse(num1) ?? 0;
+      int b = int.tryParse(num2) ?? 0;
+      switch (operacao) {
+        case '+':
+          resultado = calc.somar(a, b).toString();
+          break;
+        case '-':
+          resultado = calc.subtrair(a, b).toString();
+          break;
+        case '×':
+          resultado = calc.multiplicar(a, b).toString();
+          break;
+        case '÷':
+          try {
+            resultado = calc.dividir(a, b).toString();
+          } catch (e) {
+            resultado = 'Erro';
+          }
+          break;
+      }
+      // Reinicia para próxima operação
+      num1 = resultado;
+      num2 = '';
+      operacao = '';
+    });
   }
 
-  void dividir() {
-    int a = int.tryParse(num1Controller.text) ?? 0;
-    int b = int.tryParse(num2Controller.text) ?? 1;
-    try {
-      setState(() => resultado = calc.dividir(a, b).toString());
-    } catch (e) {
-      setState(() => resultado = e.toString());
-    }
+  void limpar() {
+    setState(() {
+      num1 = '';
+      num2 = '';
+      operacao = '';
+      resultado = '';
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Calculadora Estilizada')),
+      backgroundColor: Colors.black,
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(12),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            TextField(
-              controller: num1Controller,
-              decoration: const InputDecoration(
-                labelText: 'Número 1',
-                border: OutlineInputBorder(),
+            Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+              child: Text(
+                resultado,
+                style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.white),
               ),
-              keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 10),
-            TextField(
-              controller: num2Controller,
-              decoration: const InputDecoration(
-                labelText: 'Número 2',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
+            Column(
               children: [
-                BotaoCalculadora(texto: '+', onPressed: somar),
-                BotaoCalculadora(texto: '-', onPressed: subtrair),
-                BotaoCalculadora(texto: '×', onPressed: multiplicar),
-                BotaoCalculadora(texto: '÷', onPressed: dividir),
+                buildLinha(['7', '8', '9', '÷']),
+                buildLinha(['4', '5', '6', '×']),
+                buildLinha(['1', '2', '3', '-']),
+                buildLinha(['0', 'C', '=', '+']),
               ],
             ),
-            const SizedBox(height: 30),
-            Text('Resultado: $resultado', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildLinha(List<String> botoes) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: botoes.map((b) {
+        Color cor = Colors.grey;
+        VoidCallback func;
+
+        if (b == 'C') {
+          cor = Colors.red;
+          func = limpar;
+        } else if (b == '=') {
+          cor = Colors.orange;
+          func = calcular;
+        } else if (['+', '-', '×', '÷'].contains(b)) {
+          cor = Colors.blue;
+          func = () => selecionarOperacao(b);
+        } else {
+          func = () => adicionarNumero(b);
+        }
+
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(6.0),
+            child: BotaoCalculadora(texto: b, onPressed: func, cor: cor),
+          ),
+        );
+      }).toList(),
     );
   }
 }
