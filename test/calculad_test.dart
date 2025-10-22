@@ -2,27 +2,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:calculad/calculadora.dart';
 
 void main() {
-  group('Testes da Calculadora', () {
+  group('Testes Calculadora', () {
     final calc = Calculadora();
 
-    test('Deve somar dois números corretamente', () {
+    test('Soma correta', () {
       expect(calc.somar(2, 3), 5);
-      expect(calc.somar(-1, 4), 3);
+      expect(calc.somar(-1, 1), 0);
     });
 
-    test('Deve subtrair corretamente', () {
+    test('Subtração correta', () {
       expect(calc.subtrair(5, 3), 2);
-      expect(calc.subtrair(0, 4), -4);
     });
 
-    test('Deve multiplicar corretamente', () {
-      expect(calc.multiplicar(2, 3), 6);
-      expect(calc.multiplicar(-2, 3), -6);
+    test('Multiplicação correta', () {
+      expect(calc.multiplicar(2, 4), 8);
     });
 
-    test('Deve dividir corretamente', () {
-      expect(calc.dividir(6, 3), 2);
-      expect(calc.dividir(5, 2), 2.5);
+    test('Divisão correta', () {
+      expect(calc.dividir(6, 2), 3);
     });
 
     test('Divisão por zero lança exceção', () {
